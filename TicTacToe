@@ -1,0 +1,140 @@
+#include <vector>
+#include <iostream>
+
+using namespace std;
+
+class state
+{
+public:
+	state* father;
+	int cost;
+	char board[3][3];
+	
+	state()
+	{
+		int compteur = 1;
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				board[i][j] = compteur;
+			}
+			compteur++;
+		}
+		father = NULL;
+		cost = 0;
+	}
+
+	state(state* father, int cost)
+	{
+		this->father = father;
+		this->cost = cost;
+
+
+	}
+
+};
+
+class game
+{
+	state* root;
+	state* currentState;
+	int nbOfPlayers;
+	
+
+	game(int input)
+	{
+		root = new state;
+		currentState = root;
+		nbOfPlayers = input;
+		if (nbOfPlayers == 2)
+		{
+			//while()
+		}
+
+	}
+
+	bool winningState(state* currentState, int playerTurn, int x, int y)
+	{
+		char player;
+		if (playerTurn == 1)
+		{
+			player == 'x';
+		}
+		else if (playerTurn == 2)
+		{
+			player == 'o';
+		}
+		// check colonne
+		for (int i = 0; i < 3; i++)
+		{
+			if (currentState->board[x][i] != player)
+				break;
+			if (i == 2)
+				return true;
+		}
+		//check ligne
+		for (int i = 0; i < 3; i++)
+		{
+			if (currentState->board[i][y] != player)
+				break;
+			if (i == 2)
+				return true;
+		}
+		//check diagonal principale
+		if (x == y)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				if (currentState->board[i][i] != player)
+					break;
+				if (i == 2)
+					return true;
+			}
+		}
+		// check diagonal secondaire
+		for (int i = 0; i < 3; i++)
+		{
+			if (currentState->board[i][(2) - i] != player)
+				break;
+			if (i == 2)
+				return true;
+		}
+		return false;
+	}
+};
+
+int main()
+{
+	cout << " ___________________________________________________________________________________________ " << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|  $$$$$$$$\\ $$\\                $$$$$$$$\\                       $$$$$$$$\\                   |" << endl;
+	cout << "|  \\__$$  __|\\__|              \\__$$  __|                      \\__$$  __|                   |" << endl;
+	cout << "|     $$ |   $$\\  $$$$$$$\\         $$ | $$$$$$\\   $$$$$$$\\         $$ | $$$$$$\\   $$$$$$\\   |" << endl;
+	cout << "|     $$ |   $$ |$$  _____|$$$$$$\\ $$ | \\____$$\\ $$  _____|$$$$$$\\ $$ |$$  __$$\\ $$  __$$\\  |" << endl;
+	cout << "|     $$ |   $$ |$$ /      \\______|$$ | $$$$$$$ |$$ /      \\______|$$ |$$ /  $$ |$$$$$$$$ | |" << endl;
+	cout << "|     $$ |   $$ |$$ |              $$ |$$  __$$ |$$ |              $$ |$$ |  $$ |$$   ____| |" << endl;
+	cout << "|     $$ |   $$ |\\$$$$$$$\\         $$ |\\$$$$$$$ |\\$$$$$$$\\         $$ |\\$$$$$$  |\\$$$$$$$\\  |" << endl;
+	cout << "|     \\__|   \\__| \\_______|        \\__| \\_______| \\_______|        \\__| \\______/  \\_______| |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                          1-Player                                         |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                          2-Player                                         |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                            W-Up, S-Down, A-Left, D-Right, Enter                           |" << endl;
+	cout << " ------------------------------------------------------------------------------------------- " << endl;
+
+
+
+	bool playerFlag = true;
+	char input = 0;
+	
+
+
+
+	return 0;
+}
