@@ -9,20 +9,22 @@ public:
 	state* father;
 	int cost;
 	char board[3][3];
-	
+
 	state()
 	{
-		int compteur = 1;
+		int compteur = '1';
 		for (int i = 0; i < 3; i++)
 		{
 			for (int j = 0; j < 3; j++)
 			{
 				board[i][j] = compteur;
+				compteur++;
 			}
-			compteur++;
+			
 		}
 		father = NULL;
 		cost = 0;
+
 	}
 
 	state(state* father, int cost)
@@ -32,43 +34,131 @@ public:
 
 
 	}
-
+	void printState()
+	{
+		cout << "  0   1   2 " << endl;
+		for (int i = 0; i < 3; i++)
+		{
+			cout << "    |   |   " << endl;
+			for (int j = 0; j < 3; j++)
+			{
+				if (j == 0)
+					cout << i;
+				cout  <<" " << board[i][j] << " ";
+				if (j < 2)
+					cout << "|";
+			}
+			cout << endl;
+			if(i < 2)
+				cout << " ---+---+---" << endl;
+		}
+	}
 };
 
 class game
 {
+public:
 	state* root;
 	state* currentState;
 	int nbOfPlayers;
-	
+
 
 	game(int input)
 	{
+		bool flag = 0;
 		root = new state;
 		currentState = root;
 		nbOfPlayers = input;
+		int playerturn = 0;
+		int pieceX = -1;
+		int pieceY = -1;
+		int moveX = -1;
+		int moveY = -1;
+		int compteur = 0;
 		if (nbOfPlayers == 2)
 		{
-			//while()
+			while (flag != 1)
+			{
+				system("cls");
+				currentState->printState();
+				if (compteur < 3)
+				{
+					cout << "input the cardinal position you want to put a piece on. ex: 0 2" << endl;
+					cout << "player " << playerturn%2 +1 << "'s turn" << endl;
+					cin >> moveX;
+					cin >> moveY;
+					if (validPlacement(moveX, moveY) == true)
+					{
+						if (playerturn % 2 + 1 == 1)
+						{
+							currentState->board[moveY][moveX] = 'x';
+							if (winningState(currentState, (playerturn%2 + 1), moveX, moveY))
+								flag = true;
+							playerturn++;
+						}
+						else
+							if (playerturn % 2 + 1 == 2)
+							{
+								currentState->board[moveY][moveX] = 'o';
+								if (winningState(currentState, (playerturn % 2 + 1), moveX, moveY))
+									flag = true;
+								playerturn++;
+							}
+					}
+				}
+				else
+				{
+					cout << "input in x and y the piece you want to move, and the position you want to move it to. ex 0 0 1 0" << endl;
+					cout << "player " << playerturn % 2 + 1 << "'s turn" << endl;
+					cin >> pieceX;
+					cin >> pieceY;
+					cin >> moveX;
+					cin >> moveY;
+
+				}
+				
+			}
+			currentState->printState();
+			cout << "Player " << playerturn % 2 << " wins!";
+		}
+
+	}
+
+	bool validPlacement(int x, int y)
+	{
+		if (x < 3 && x >= 0 && y < 3 && y >= 0)
+		{
+			if (currentState->board[y][x] != 'x' && currentState->board[y][x] != 'o')
+				return true;
+			else false;
+		}
+	}
+
+	bool validMove(int x, int y, int x2, int y2)
+	{
+		if (x < 3 && x2 < 3 && y < 3 && y2 < 3 && x >= 0 && x2 >= 0 && y >= 0 && y2 >= 0)
+		{
+
 		}
 
 	}
 
 	bool winningState(state* currentState, int playerTurn, int x, int y)
 	{
-		char player;
+		char player= 'w';
 		if (playerTurn == 1)
 		{
-			player == 'x';
+			player = 'x';
 		}
-		else if (playerTurn == 2)
-		{
-			player == 'o';
-		}
+		else
+			if (playerTurn == 2)
+			{
+				player = 'o';
+			}
 		// check colonne
 		for (int i = 0; i < 3; i++)
 		{
-			if (currentState->board[x][i] != player)
+			if (currentState->board[i][x] != player)
 				break;
 			if (i == 2)
 				return true;
@@ -76,7 +166,7 @@ class game
 		//check ligne
 		for (int i = 0; i < 3; i++)
 		{
-			if (currentState->board[i][y] != player)
+			if (currentState->board[y][i] != player)
 				break;
 			if (i == 2)
 				return true;
@@ -128,12 +218,12 @@ int main()
 	cout << "|                            W-Up, S-Down, A-Left, D-Right, Enter                           |" << endl;
 	cout << " ------------------------------------------------------------------------------------------- " << endl;
 
-
+	system("pause");
 
 	bool playerFlag = true;
 	char input = 0;
+	game(2);
 	
-
 
 
 	return 0;
