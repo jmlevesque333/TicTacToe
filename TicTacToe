@@ -117,15 +117,16 @@ public:
 					cin >> moveY;
 					if (validMove(pieceX, pieceY, moveX, moveY, playerturn % 2 + 1) == true)
 					{
-						if (winningState(currentState, (playerturn % 2 + 1), moveX, moveY))
-							flag == true;
+						if (winningState(currentState, (playerturn % 2 + 1), moveX, moveY) == true)
+							flag = true;
 						playerturn++;
 					}
 
 				}
+				system("cls");
 			}
 			currentState->printState();
-			cout << "Player " << playerturn % 2 << " wins!";
+			cout << "Player " << playerturn % 2 +1 << " wins!" << endl;
 		}
 	}
 
@@ -158,20 +159,23 @@ public:
 			{
 				if (currentState->board[int(y)][int(x)] == player)
 				{
-					if ((x2 - x) / (y2 - y) == 1)
+					if (currentState->board[int(y2)][int(x2)] == '.')
 					{
-						if ((x == 0 && (y == 0 || y == 2)) || (x == 2 && (y == 0 || y == 2)) || (x == 1 && y == 1))
+						if (abs((x2 - x) / (y2 - y)) == 1)
+						{
+							if ((x == 0 && (y == 0 || y == 2)) || (x == 2 && (y == 0 || y == 2)) || (x == 1 && y == 1))
+							{
+								currentState->board[int(y)][int(x)] = '.';
+								currentState->board[int(y2)][int(x2)] = player;
+								return true;
+							}
+						}
+						else
 						{
 							currentState->board[int(y)][int(x)] = '.';
 							currentState->board[int(y2)][int(x2)] = player;
 							return true;
 						}
-					}
-					else
-					{
-						currentState->board[int(y)][int(x)] = '.';
-						currentState->board[int(y2)][int(x2)] = player;
-						return true;
 					}
 				}
 			}
