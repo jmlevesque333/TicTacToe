@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -12,15 +13,13 @@ public:
 
 	state()
 	{
-		int compteur = '1';
 		for (int i = 0; i < 3; i++)
 		{
 			for (int j = 0; j < 3; j++)
 			{
-				board[i][j] = compteur;
-				compteur++;
+				board[i][j] = '.';
 			}
-			
+
 		}
 		father = NULL;
 		cost = 0;
@@ -44,12 +43,12 @@ public:
 			{
 				if (j == 0)
 					cout << i;
-				cout  <<" " << board[i][j] << " ";
+				cout << " " << board[i][j] << " ";
 				if (j < 2)
 					cout << "|";
 			}
 			cout << endl;
-			if(i < 2)
+			if (i < 2)
 				cout << " ---+---+---" << endl;
 		}
 	}
@@ -81,10 +80,10 @@ public:
 			{
 				system("cls");
 				currentState->printState();
-				if (compteur < 3)
+				if (compteur < 6)
 				{
 					cout << "input the cardinal position you want to put a piece on. ex: 0 2" << endl;
-					cout << "player " << playerturn%2 +1 << "'s turn" << endl;
+					cout << "player " << playerturn % 2 + 1 << "'s turn" << endl;
 					cin >> moveX;
 					cin >> moveY;
 					if (validPlacement(moveX, moveY) == true)
@@ -92,9 +91,10 @@ public:
 						if (playerturn % 2 + 1 == 1)
 						{
 							currentState->board[moveY][moveX] = 'x';
-							if (winningState(currentState, (playerturn%2 + 1), moveX, moveY))
+							if (winningState(currentState, (playerturn % 2 + 1), moveX, moveY))
 								flag = true;
 							playerturn++;
+							compteur++;
 						}
 						else
 							if (playerturn % 2 + 1 == 2)
@@ -103,6 +103,7 @@ public:
 								if (winningState(currentState, (playerturn % 2 + 1), moveX, moveY))
 									flag = true;
 								playerturn++;
+								compteur++;
 							}
 					}
 				}
@@ -114,14 +115,18 @@ public:
 					cin >> pieceY;
 					cin >> moveX;
 					cin >> moveY;
+					if (validMove(pieceX, pieceY, moveX, moveY, playerturn % 2 + 1) == true)
+					{
+						if (winningState(currentState, (playerturn % 2 + 1), moveX, moveY))
+							flag == true;
+						playerturn++;
+					}
 
 				}
-				
 			}
 			currentState->printState();
 			cout << "Player " << playerturn % 2 << " wins!";
 		}
-
 	}
 
 	bool validPlacement(int x, int y)
@@ -134,18 +139,49 @@ public:
 		}
 	}
 
-	bool validMove(int x, int y, int x2, int y2)
+	bool validMove(float x, float y, float x2, float y2, int playerTurn)
 	{
+		char player = 'w';
+		if (playerTurn == 1)
+		{
+			player = 'x';
+		}
+		else
+			if (playerTurn == 2)
+			{
+				player = 'o';
+			}
+
 		if (x < 3 && x2 < 3 && y < 3 && y2 < 3 && x >= 0 && x2 >= 0 && y >= 0 && y2 >= 0)
 		{
-
+			if (abs(x - x2) < 2 && abs(y - y2) < 2)
+			{
+				if (currentState->board[int(y)][int(x)] == player)
+				{
+					if ((x2 - x) / (y2 - y) == 1)
+					{
+						if ((x == 0 && (y == 0 || y == 2)) || (x == 2 && (y == 0 || y == 2)) || (x == 1 && y == 1))
+						{
+							currentState->board[int(y)][int(x)] = '.';
+							currentState->board[int(y2)][int(x2)] = player;
+							return true;
+						}
+					}
+					else
+					{
+						currentState->board[int(y)][int(x)] = '.';
+						currentState->board[int(y2)][int(x2)] = player;
+						return true;
+					}
+				}
+			}
 		}
-
+		return false;
 	}
 
 	bool winningState(state* currentState, int playerTurn, int x, int y)
 	{
-		char player= 'w';
+		char player = 'w';
 		if (playerTurn == 1)
 		{
 			player = 'x';
@@ -223,7 +259,7 @@ int main()
 	bool playerFlag = true;
 	char input = 0;
 	game(2);
-	
+
 
 
 	return 0;
