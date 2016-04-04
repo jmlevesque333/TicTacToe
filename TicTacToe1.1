@@ -1,0 +1,479 @@
+#include <vector>
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+class state
+{
+public:
+	state* father;
+	state* son;
+	int cost;
+	int nbPieces;
+	char board[3][3];
+
+
+	state()
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				board[i][j] = '.';
+			}
+
+		}
+		father = NULL;
+		cost = 0;
+		nbPieces = 0;
+
+	}
+
+	state(state* father, int cost, int x, int y, int playerturn, int nbPieces)
+	{
+		this->father = father;
+		this->cost = cost;
+		char player;
+		if (playerturn == 1)
+			player = 'x';
+		if (playerturn == 2)
+			player = 'o';
+
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				board[j][i] = father->board[j][i];
+			}
+		}
+		board[y][x] = player;
+
+	}
+
+	state(state* father, int cost, int x, int y, int playerturn, int nbPieces, int x2, int y2)
+	{
+		this->father = father;
+		this->cost = cost;
+		char player;
+		if (playerturn == 1)
+			player = 'x';
+		if (playerturn == 2)
+			player = 'o';
+
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				board[j][i] = father->board[j][i];
+			}
+		}
+		board[y][x] = '.';
+		board[y2][x2] = player;
+
+	}
+	void printState()
+	{
+		cout << "  0   1   2 " << endl;
+		for (int i = 0; i < 3; i++)
+		{
+			cout << "    |   |   " << endl;
+			for (int j = 0; j < 3; j++)
+			{
+				if (j == 0)
+					cout << i;
+				cout << " " << board[i][j] << " ";
+				if (j < 2)
+					cout << "|";
+			}
+			cout << endl;
+			if (i < 2)
+				cout << " ---+---+---" << endl;
+		}
+	}
+};
+
+class game
+{
+public:
+	state* root;
+	state* currentState;
+	int nbOfPlayers;
+
+
+	game(int input)
+	{
+		bool flag = 0;
+		root = new state;
+		currentState = root;
+		nbOfPlayers = input;
+		int playerturn = 0;
+		int pieceX = -1;
+		int pieceY = -1;
+		int moveX = -1;
+		int moveY = -1;
+		int compteur = 0;
+		if (nbOfPlayers == 2)
+		{
+			while (flag != 1)
+			{
+				system("cls");
+				currentState->printState();
+				if (compteur < 6)
+				{
+					cout << "input the cardinal position you want to put a piece on. ex: 0 2" << endl;
+					cout << "player " << playerturn % 2 + 1 << "'s turn" << endl;
+					cin >> moveX;
+					cin >> moveY;
+					if (validDrop(moveX, moveY, currentState) == true)
+					{
+						if (playerturn % 2 + 1 == 1)
+						{
+							currentState->board[moveY][moveX] = 'x';
+							if (winningStateHuman(currentState, (playerturn % 2 + 1), moveX, moveY))
+								flag = true;
+							playerturn++;
+							compteur++;
+						}
+						else
+							if (playerturn % 2 + 1 == 2)
+							{
+								currentState->board[moveY][moveX] = 'o';
+								if (winningStateHuman(currentState, (playerturn % 2 + 1), moveX, moveY))
+									flag = true;
+								playerturn++;
+								compteur++;
+							}
+					}
+				}
+				else
+				{
+					cout << "input in x and y the piece you want to move, and the position you want to move it to. ex 0 0 1 0" << endl;
+					cout << "player " << playerturn % 2 + 1 << "'s turn" << endl;
+					cin >> pieceX;
+					cin >> pieceY;
+					cin >> moveX;
+					cin >> moveY;
+					if (validMove(pieceX, pieceY, moveX, moveY, playerturn % 2 + 1) == true)
+					{
+						if (playerturn % 2 + 1 == 1)
+						{
+							currentState->board[pieceX][pieceX] = '.';
+							currentState->board[moveY][moveX] = 'x';
+							if (winningStateHuman(currentState, (playerturn % 2 + 1), moveX, moveY) == true)
+								flag = true;
+							playerturn++;
+						}
+						if (playerturn % 2 + 1 == 2)
+						{
+							currentState->board[pieceX][pieceX] = '.';
+							currentState->board[moveY][moveX] = 'o';
+							if (winningStateHuman(currentState, (playerturn % 2 + 1), moveX, moveY) == true)
+								flag = true;
+							playerturn++;
+						}
+					}
+
+				}
+				system("cls");
+			}
+			currentState->printState();
+			cout << "Player " << playerturn % 2 + 1 << " wins!" << endl;
+		}
+		else if (nbOfPlayers == 1)
+		{
+			int playernb;
+			cout << "do you want to be player 1 or 2?" << endl;
+			cin >> playernb;
+			if (playernb == 1)
+			{
+				while (flag != true)
+				{
+					system("cls");
+					currentState->printState();
+					if (compteur < 6)
+					{
+						cout << "input the cardinal position you want to put a piece on. ex: 0 2" << endl;
+						cout << "player " <<  '1' << "'s turn" << endl;
+						
+						while(validDrop(moveX, moveY, currentState) != true)
+						{
+							cin >> moveX;
+							cin >> moveY;
+						}
+						currentState->board[moveY][moveX] = 'x';
+						if (winningStateHuman(currentState, 1, moveX, moveY))
+							flag = true;
+						compteur++;
+
+
+					}
+				}
+			}
+			else if (playernb == 2)
+			{
+
+			}
+		}
+	}
+
+	state* MinMaxDrop(state* root, int depth, int playerTurn, int nbPieces)
+	{
+		if (depth > 2)
+			return;
+		if (winningStateBot(root, playerTurn))
+		{
+			///euristique statique return;
+		}
+		int bestScore = -100;
+		state* path = NULL;
+		vector <state*> dropList;
+		generateDrop(dropList, playerTurn, nbPieces);
+		int i = dropList.size();
+		if (nbPieces < 6)
+		{
+			for (int n = 0; n < i; n++)
+			{
+				state* temp = MinMaxDrop(dropList[i], depth++, playerTurn++ % 2 + 1, nbPieces++);
+				temp->cost = temp->cost*-1;
+				if (bestScore < temp->cost)
+				{
+					bestScore = temp->cost;
+					path = temp;
+				}
+
+			}
+		}
+		else
+		{
+
+		}
+		return path;
+
+	}
+
+	void generateDrop(vector<state*> dropList, int playerTurn, int nbPieces)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (validDrop(i, j, currentState) == true)
+				{
+					dropList.push_back(new state(currentState, 0, i, j, playerTurn, nbPieces));
+				}
+			}
+		}
+	}
+
+	void generateMove(vector<state*> moveList, int playerTurn, int nbPieces)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				for (int x = 0; x < 3; x++)
+				{
+					for (int y = 0; y < 3; y++)
+					{
+						if (validMove(i, j, x, y, playerTurn) == true)
+						{
+							moveList.push_back(new state(currentState, 0, i, j, playerTurn, nbPieces, x, y));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	int maxMovesDrop(state* root, movet &bestMove, int playerTurn)
+	{
+		if (winningStateBot(root, playerTurn) == true)
+			return staticP(root);
+		vector <movet> dropList;
+		generateDrop(dropList);
+		int nbMoves = dropList.size();
+		int bestScore = -1000;
+		for (int i = 0; i < nbMoves; i++)
+		{
+			movet temp = dropList[i];
+
+		}
+	}
+
+	bool validDrop(int x, int y, state* temp)
+	{
+		if (x < 3 && x >= 0 && y < 3 && y >= 0)
+		{
+			if (temp->board[y][x] != 'x' && temp->board[y][x] != 'o')
+				return true;
+			else false;
+		}
+	}
+
+	bool validMove(float x, float y, float x2, float y2, int playerTurn)
+	{
+		char player;
+		if (playerTurn == 1)
+			player = 'x';
+		if (playerTurn == 2)
+			player = 'o';
+		if (x < 3 && x2 < 3 && y < 3 && y2 < 3 && x >= 0 && x2 >= 0 && y >= 0 && y2 >= 0)
+		{
+			if (abs(x - x2) < 2 && abs(y - y2) < 2)
+			{
+				if (currentState->board[int(y)][int(x)] == player)
+				{
+					if (currentState->board[int(y2)][int(x2)] == '.')
+					{
+						if (abs((x2 - x) / (y2 - y)) == 1)
+						{
+							if ((x == 0 && (y == 0 || y == 2)) || (x == 2 && (y == 0 || y == 2)) || (x == 1 && y == 1))
+							{
+								return true;
+							}
+						}
+						else
+						{
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	bool winningStateHuman(state* currentState, int playerTurn, int x, int y)
+	{
+		char player = 'w';
+		if (playerTurn == 1)
+		{
+			player = 'x';
+		}
+		else
+			if (playerTurn == 2)
+			{
+				player = 'o';
+			}
+		// check colum
+		for (int i = 0; i < 3; i++)
+		{
+			if (currentState->board[i][x] != player)
+				break;
+			if (i == 2)
+				return true;
+		}
+		//check row
+		for (int i = 0; i < 3; i++)
+		{
+			if (currentState->board[y][i] != player)
+				break;
+			if (i == 2)
+				return true;
+		}
+		//check primary diagonal 
+		if (x == y)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				if (currentState->board[i][i] != player)
+					break;
+				if (i == 2)
+					return true;
+			}
+		}
+		// check secondary diagonal
+		for (int i = 0; i < 3; i++)
+		{
+			if (currentState->board[i][(2) - i] != player)
+				break;
+			if (i == 2)
+				return true;
+		}
+		return false;
+	}
+
+	bool winningStateBot(state* root, int playerTurn)
+	{
+		char player;
+		if (playerTurn == 1)
+			player = 'x';
+		if (playerTurn == 2)
+			player = 'o';
+		//check colonne
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (root->board[j][i] != player)
+					break;
+				if (j == 2)
+					return true;
+			}
+		}
+		//check row
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (root->board[i][j] != player)
+					break;
+				if (j == 2)
+					return true;
+			}
+		}
+		//check primary diagonal
+		for (int i = 0; i < 3; i++)
+		{
+			if (currentState->board[i][i] != player)
+				break;
+			if (i == 2)
+				return true;
+		}
+		//check secondary diagonal
+		for (int i = 0; i < 3; i++)
+		{
+			if (currentState->board[i][(2) - i] != player)
+				break;
+			if (i == 2)
+				return true;
+		}
+		return false;
+	}
+};
+
+int main()
+{
+	cout << " ___________________________________________________________________________________________ " << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|  $$$$$$$$\\ $$\\                $$$$$$$$\\                       $$$$$$$$\\                   |" << endl;
+	cout << "|  \\__$$  __|\\__|              \\__$$  __|                      \\__$$  __|                   |" << endl;
+	cout << "|     $$ |   $$\\  $$$$$$$\\         $$ | $$$$$$\\   $$$$$$$\\         $$ | $$$$$$\\   $$$$$$\\   |" << endl;
+	cout << "|     $$ |   $$ |$$  _____|$$$$$$\\ $$ | \\____$$\\ $$  _____|$$$$$$\\ $$ |$$  __$$\\ $$  __$$\\  |" << endl;
+	cout << "|     $$ |   $$ |$$ /      \\______|$$ | $$$$$$$ |$$ /      \\______|$$ |$$ /  $$ |$$$$$$$$ | |" << endl;
+	cout << "|     $$ |   $$ |$$ |              $$ |$$  __$$ |$$ |              $$ |$$ |  $$ |$$   ____| |" << endl;
+	cout << "|     $$ |   $$ |\\$$$$$$$\\         $$ |\\$$$$$$$ |\\$$$$$$$\\         $$ |\\$$$$$$  |\\$$$$$$$\\  |" << endl;
+	cout << "|     \\__|   \\__| \\_______|        \\__| \\_______| \\_______|        \\__| \\______/  \\_______| |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                          1-Player                                         |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                          2-Player                                         |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                                                                                           |" << endl;
+	cout << "|                            W-Up, S-Down, A-Left, D-Right, Enter                           |" << endl;
+	cout << " ------------------------------------------------------------------------------------------- " << endl;
+
+	system("pause");
+
+	bool playerFlag = true;
+	char input = 0;
+	game(2);
+
+
+
+	return 0;
+}
