@@ -47,7 +47,7 @@ public:
 				board[j][i] = father->board[j][i];
 			}
 		}
-		board[y][x] = player;
+		board[y][x] = player; ///
 
 	}
 
@@ -205,36 +205,121 @@ public:
 						if (winningStateHuman(currentState, 1, moveX, moveY))
 							flag = true;
 						compteur++;
+					}
+					system("cls");
+					currentState->printState();
+					if (compteur < 6 && flag != true)
+					{
+						currentState = MinMax(currentState, 0, 2, compteur);
+						compteur++;
+					}
+					if (compteur > 5 && flag != true)
+					{
+						cout << "input in x and y the piece you want to move, and the position you want to move it to. ex 0 0 1 0" << endl;
+						cout << "player " << playerturn % 2 + 1 << "'s turn" << endl;
+						cin >> pieceX;
+						cin >> pieceY;
+						cin >> moveX;
+						cin >> moveY;
+						while (validMove(pieceX, pieceY, moveX, moveY, playerturn % 2 + 1) != true)
+						{
+							cin >> pieceX;
+							cin >> pieceY;
+							cin >> moveX;
+							cin >> moveY;
+						}
+						currentState->board[pieceX][pieceX] = '.';
+						currentState->board[moveY][moveX] = 'x';
+						if (winningStateHuman(currentState, (playerturn % 2 + 1), moveX, moveY) == true)
+							flag = true;
+						compteur++;
+						if (compteur > 5 && flag != true)
+						{
+							system("cls");
+							currentState->printState();
 
-
+							currentState = MinMax(currentState, 0, 2, 6);
+							compteur++;
+						}
 					}
 				}
 			}
 			else if (playernb == 2)
 			{
+				while (flag != true)
+				{
+					system("cls");
+					currentState->printState();
+					if (compteur < 6)
+					{
+						currentState = MinMax(currentState, 0, 1, compteur);
+						compteur++;
+					}
+					if (compteur < 6)
+					{
+						cout << "input the cardinal position you want to put a piece on. ex: 0 2" << endl;
+						cout << "player " << '2' << "'s turn" << endl;
 
+						while (validDrop(moveX, moveY, currentState) != true)
+						{
+							cin >> moveX;
+							cin >> moveY;
+						}
+						currentState->board[moveY][moveX] = 'x';
+						if (winningStateHuman(currentState, 1, moveX, moveY))
+							flag = true;
+						compteur++;
+					}
+					if (compteur > 5)
+					{
+						currentState = MinMax(currentState, 0, 2, 6);
+						compteur++;
+
+						system("cls");
+						currentState->printState();
+
+						cout << "input in x and y the piece you want to move, and the position you want to move it to. ex 0 0 1 0" << endl;
+						cout << "player " << playerturn % 2 + 1 << "'s turn" << endl;
+						cin >> pieceX;
+						cin >> pieceY;
+						cin >> moveX;
+						cin >> moveY;
+						while (validMove(pieceX, pieceY, moveX, moveY, playerturn % 2 + 1) != true)
+						{
+							cin >> pieceX;
+							cin >> pieceY;
+							cin >> moveX;
+							cin >> moveY;
+						}
+						currentState->board[pieceX][pieceX] = '.';
+						currentState->board[moveY][moveX] = 'x';
+						if (winningStateHuman(currentState, (playerturn % 2 + 1), moveX, moveY) == true)
+							flag = true;
+						compteur++;
+					}
+				}
 			}
 		}
 	}
 
-	state* MinMaxDrop(state* root, int depth, int playerTurn, int nbPieces)
+	state* MinMax(state* root, int depth, int playerTurn, int nbPieces)
 	{
 		if (depth > 2)
-			return;
+			return root;
 		if (winningStateBot(root, playerTurn))
 		{
 			///euristique statique return;
 		}
 		int bestScore = -100;
 		state* path = NULL;
-		vector <state*> dropList;
-		generateDrop(dropList, playerTurn, nbPieces);
-		int i = dropList.size();
 		if (nbPieces < 6)
 		{
+			vector <state*> dropList;
+			generateDrop(dropList, playerTurn, nbPieces);
+			int i = dropList.size();
 			for (int n = 0; n < i; n++)
 			{
-				state* temp = MinMaxDrop(dropList[i], depth++, playerTurn++ % 2 + 1, nbPieces++);
+				state* temp = MinMax(dropList[i], depth++, playerTurn++ % 2 + 1, nbPieces++);
 				temp->cost = temp->cost*-1;
 				if (bestScore < temp->cost)
 				{
@@ -246,13 +331,24 @@ public:
 		}
 		else
 		{
-
+			vector <state*> moveList;
+			generateMove(moveList, playerTurn, nbPieces);
+			int i = moveList.size();
+			for (int n = 0; n < i; n++)
+			{
+				state* temp = MinMax(moveList[i], depth++, playerTurn++ % 2 + 1, nbPieces++);
+				temp->cost = temp->cost*-1;
+				if (bestScore < temp->cost)
+				{
+					bestScore = temp->cost;
+					path = temp;
+				}
+			}
 		}
 		return path;
-
 	}
 
-	void generateDrop(vector<state*> dropList, int playerTurn, int nbPieces)
+	void generateDrop(vector<state*>& dropList, int playerTurn, int nbPieces)
 	{
 		for (int i = 0; i < 3; i++)
 		{
@@ -260,10 +356,25 @@ public:
 			{
 				if (validDrop(i, j, currentState) == true)
 				{
-					dropList.push_back(new state(currentState, 0, i, j, playerTurn, nbPieces));
+					state* temp = new state(currentState, 0, i, j, playerTurn, nbPieces);
+					temp->cost = euristique(temp, playerTurn);
+					dropList.push_back(temp);
 				}
 			}
 		}
+	}
+
+	int euristique(state* root, int playerTurn)
+	{
+		if (winningStateBot(root, playerTurn) == true)
+		{
+			return INT_MAX;
+		}
+		if (winningStateBot(root, playerTurn % 2 + 2))
+		{
+			return INT_MIN;
+		}
+		return 0;
 	}
 
 	void generateMove(vector<state*> moveList, int playerTurn, int nbPieces)
@@ -286,26 +397,11 @@ public:
 		}
 	}
 
-	int maxMovesDrop(state* root, movet &bestMove, int playerTurn)
-	{
-		if (winningStateBot(root, playerTurn) == true)
-			return staticP(root);
-		vector <movet> dropList;
-		generateDrop(dropList);
-		int nbMoves = dropList.size();
-		int bestScore = -1000;
-		for (int i = 0; i < nbMoves; i++)
-		{
-			movet temp = dropList[i];
-
-		}
-	}
-
 	bool validDrop(int x, int y, state* temp)
 	{
 		if (x < 3 && x >= 0 && y < 3 && y >= 0)
 		{
-			if (temp->board[y][x] != 'x' && temp->board[y][x] != 'o')
+			if (temp->board[y][x] != '.')
 				return true;
 			else false;
 		}
@@ -471,7 +567,7 @@ int main()
 
 	bool playerFlag = true;
 	char input = 0;
-	game(2);
+	game(1);
 
 
 
