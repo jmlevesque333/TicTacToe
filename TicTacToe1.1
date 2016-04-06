@@ -46,7 +46,7 @@ public:
 				board[j][i] = father->board[j][i];
 			}
 		}
-		board[y][x] = player; 
+		board[y][x] = player;
 
 	}
 
@@ -312,26 +312,30 @@ public:
 	state MinMax(state* root, int depth, int playerTurn, int nbPieces)
 	{
 		int bestScore = -100;
+		playerTurn++;
 		state* path = NULL;
 		if (depth == 2)
 		{
+			if (nbPieces < 7)
+			{
+
+			}
 			state* temp = new state();
-			temp->cost = euristiqueDrop(root, playerTurn);
+			temp->cost = euristiqueMove(root, playerTurn);
 			return *temp;
-			
+
 		}
 		else
 		{
 			if (nbPieces < 6)
 			{
 				vector <state*> dropList;
-				generateDrop(dropList, playerTurn, nbPieces);
-				playerTurn++;
+				generateDrop(dropList, root, playerTurn %2 +1, nbPieces);
 
 				int i = dropList.size();
 				for (int n = 0; n < i; n++)
 				{
-					state temp = MinMax(dropList[i], depth++, playerTurn % 2 + 1, nbPieces++);
+					state temp = MinMax(dropList[n], depth+1, playerTurn, nbPieces+1);
 					temp.cost = temp.cost*-1;
 					if (bestScore < temp.cost)
 					{
@@ -360,7 +364,7 @@ public:
 		return *path;
 	}
 
-	int euristiqueDrop(state* root, int playerTurn)
+	int euristiqueMove(state* root, int playerTurn)
 	{
 		if (winningStateBot(root, playerTurn) == true)
 		{
@@ -369,15 +373,34 @@ public:
 		return 0;
 	}
 
-	void generateDrop(vector<state*>& dropList, int playerTurn, int nbPieces)
+	int euristiqueDrop(state* root, int playerTurn)
+	{
+		char player;
+		if (playerTurn == 1)
+			player = 'x';
+		if (playerTurn == 2)
+			player = 'o';
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (root->board[j][i] == player)
+				{
+					if()
+				}
+			}
+		}
+	}
+
+	void generateDrop(vector<state*>& dropList, state* root, int playerTurn, int nbPieces)
 	{
 		for (int i = 0; i < 3; i++)
 		{
 			for (int j = 0; j < 3; j++)
 			{
-				if (validDrop(i, j, currentState) == true)
+				if (validDrop(i, j, root) == true)
 				{
-					state* temp = new state(currentState, 0, i, j, playerTurn, nbPieces);
+					state* temp = new state(root, 0, i, j, playerTurn, nbPieces);
 					dropList.push_back(temp);
 				}
 			}
@@ -410,7 +433,8 @@ public:
 		{
 			if (temp->board[y][x] == '.')
 				return true;
-			else false;
+			else 
+				return false;
 		}
 	}
 
