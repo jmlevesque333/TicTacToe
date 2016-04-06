@@ -7,8 +7,7 @@ using namespace std;
 class state
 {
 public:
-	state* father;
-	state* son;
+	state* path;
 	int cost;
 	int nbPieces;
 	char board[3][3];
@@ -24,7 +23,7 @@ public:
 			}
 
 		}
-		father = NULL;
+		path = NULL;
 		cost = 0;
 		nbPieces = 0;
 
@@ -32,7 +31,7 @@ public:
 
 	state(state* father, int cost, int x, int y, int playerturn, int nbPieces)
 	{
-		this->father = father;
+		this->path = father;
 		this->cost = cost;
 		char player;
 		if (playerturn == 1)
@@ -47,13 +46,13 @@ public:
 				board[j][i] = father->board[j][i];
 			}
 		}
-		board[y][x] = player; ///
+		board[y][x] = player; 
 
 	}
 
 	state(state* father, int cost, int x, int y, int playerturn, int nbPieces, int x2, int y2)
 	{
-		this->father = father;
+		this->path = father;
 		this->cost = cost;
 		char player;
 		if (playerturn == 1)
@@ -194,9 +193,9 @@ public:
 					if (compteur < 6)
 					{
 						cout << "input the cardinal position you want to put a piece on. ex: 0 2" << endl;
-						cout << "player " <<  '1' << "'s turn" << endl;
-						
-						while(validDrop(moveX, moveY, currentState) != true)
+						cout << "player " << '1' << "'s turn" << endl;
+
+						while (validDrop(moveX, moveY, currentState) != true)
 						{
 							cin >> moveX;
 							cin >> moveY;
@@ -210,7 +209,9 @@ public:
 					currentState->printState();
 					if (compteur < 6 && flag != true)
 					{
-						currentState = MinMax(currentState, 0, 2, compteur);
+						state temp = MinMax(currentState, 0, 2, compteur);
+						temp.nbPieces++;
+						currentState = &temp;
 						compteur++;
 					}
 					if (compteur > 5 && flag != true)
@@ -238,7 +239,9 @@ public:
 							system("cls");
 							currentState->printState();
 
-							currentState = MinMax(currentState, 0, 2, 6);
+							state temp = MinMax(currentState, 0, 2, compteur);
+							temp.nbPieces++;
+							currentState = &temp;
 							compteur++;
 						}
 					}
@@ -252,7 +255,9 @@ public:
 					currentState->printState();
 					if (compteur < 6)
 					{
-						currentState = MinMax(currentState, 0, 1, compteur);
+						state temp = MinMax(currentState, 0, 2, compteur);
+						temp.nbPieces++;
+						currentState = &temp;
 						compteur++;
 					}
 					if (compteur < 6)
@@ -272,7 +277,9 @@ public:
 					}
 					if (compteur > 5)
 					{
-						currentState = MinMax(currentState, 0, 2, 6);
+						state temp = MinMax(currentState, 0, 2, compteur);
+						temp.nbPieces++;
+						currentState = &temp;
 						compteur++;
 
 						system("cls");
@@ -302,50 +309,64 @@ public:
 		}
 	}
 
-	state* MinMax(state* root, int depth, int playerTurn, int nbPieces)
+	state MinMax(state* root, int depth, int playerTurn, int nbPieces)
 	{
-		if (depth > 2)
-			return root;
-		if (winningStateBot(root, playerTurn))
-		{
-			///euristique statique return;
-		}
 		int bestScore = -100;
 		state* path = NULL;
-		if (nbPieces < 6)
+		if (depth == 2)
 		{
-			vector <state*> dropList;
-			generateDrop(dropList, playerTurn, nbPieces);
-			int i = dropList.size();
-			for (int n = 0; n < i; n++)
-			{
-				state* temp = MinMax(dropList[i], depth++, playerTurn++ % 2 + 1, nbPieces++);
-				temp->cost = temp->cost*-1;
-				if (bestScore < temp->cost)
-				{
-					bestScore = temp->cost;
-					path = temp;
-				}
-
-			}
+			state* temp = new state();
+			temp->cost = euristiqueDrop(root, playerTurn);
+			return *temp;
+			
 		}
 		else
 		{
-			vector <state*> moveList;
-			generateMove(moveList, playerTurn, nbPieces);
-			int i = moveList.size();
-			for (int n = 0; n < i; n++)
+			if (nbPieces < 6)
 			{
-				state* temp = MinMax(moveList[i], depth++, playerTurn++ % 2 + 1, nbPieces++);
-				temp->cost = temp->cost*-1;
-				if (bestScore < temp->cost)
+				vector <state*> dropList;
+				generateDrop(dropList, playerTurn, nbPieces);
+				playerTurn++;
+
+				int i = dropList.size();
+				for (int n = 0; n < i; n++)
 				{
-					bestScore = temp->cost;
-					path = temp;
+					state temp = MinMax(dropList[i], depth++, playerTurn % 2 + 1, nbPieces++);
+					temp.cost = temp.cost*-1;
+					if (bestScore < temp.cost)
+					{
+						bestScore = temp.cost;
+						path = dropList[i];
+					}
+				}
+			}
+			else
+			{
+				vector <state*> moveList;
+				generateMove(moveList, playerTurn, nbPieces);
+				int i = moveList.size();
+				for (int n = 0; n < i; n++)
+				{
+					state temp = MinMax(moveList[i], depth++, playerTurn++ % 2 + 1, nbPieces++);
+					temp.cost = temp.cost*-1;
+					if (bestScore < temp.cost)
+					{
+						bestScore = temp.cost;
+						path = moveList[i];
+					}
 				}
 			}
 		}
-		return path;
+		return *path;
+	}
+
+	int euristiqueDrop(state* root, int playerTurn)
+	{
+		if (winningStateBot(root, playerTurn) == true)
+		{
+			return INT_MAX;
+		}
+		return 0;
 	}
 
 	void generateDrop(vector<state*>& dropList, int playerTurn, int nbPieces)
@@ -357,24 +378,10 @@ public:
 				if (validDrop(i, j, currentState) == true)
 				{
 					state* temp = new state(currentState, 0, i, j, playerTurn, nbPieces);
-					temp->cost = euristique(temp, playerTurn);
 					dropList.push_back(temp);
 				}
 			}
 		}
-	}
-
-	int euristique(state* root, int playerTurn)
-	{
-		if (winningStateBot(root, playerTurn) == true)
-		{
-			return INT_MAX;
-		}
-		if (winningStateBot(root, playerTurn % 2 + 2))
-		{
-			return INT_MIN;
-		}
-		return 0;
 	}
 
 	void generateMove(vector<state*> moveList, int playerTurn, int nbPieces)
@@ -401,7 +408,7 @@ public:
 	{
 		if (x < 3 && x >= 0 && y < 3 && y >= 0)
 		{
-			if (temp->board[y][x] != '.')
+			if (temp->board[y][x] == '.')
 				return true;
 			else false;
 		}
