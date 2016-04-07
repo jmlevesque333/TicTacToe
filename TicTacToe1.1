@@ -92,6 +92,17 @@ public:
 	}
 };
 
+void stateCopier(state* root, state* copiedState)
+{
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			copiedState->board[j][i] = root->board[j][i];
+		}
+	}
+}
+
 class game
 {
 public:
@@ -209,9 +220,9 @@ public:
 					currentState->printState();
 					if (compteur < 6 && flag != true)
 					{
-						state temp = MinMax(currentState, 0, 2, compteur);
-						temp.nbPieces++;
-						currentState = &temp;
+						state *temp = MinMax(currentState, 0, 2, compteur);
+						temp->nbPieces++;
+						currentState = temp;
 						compteur++;
 					}
 					if (compteur > 5 && flag != true)
@@ -239,9 +250,9 @@ public:
 							system("cls");
 							currentState->printState();
 
-							state temp = MinMax(currentState, 0, 2, compteur);
-							temp.nbPieces++;
-							currentState = &temp;
+							state *temp = MinMax(currentState, 0, 2, compteur);
+							temp->nbPieces++;
+							currentState = temp;
 							compteur++;
 						}
 					}
@@ -255,9 +266,9 @@ public:
 					currentState->printState();
 					if (compteur < 6)
 					{
-						state temp = MinMax(currentState, 0, 2, compteur);
-						temp.nbPieces++;
-						currentState = &temp;
+						state *temp = MinMax(currentState, 0, 2, compteur);
+						temp->nbPieces++;
+						currentState = temp;
 						compteur++;
 					}
 					if (compteur < 6)
@@ -277,9 +288,9 @@ public:
 					}
 					if (compteur > 5)
 					{
-						state temp = MinMax(currentState, 0, 2, compteur);
-						temp.nbPieces++;
-						currentState = &temp;
+						state *temp = MinMax(currentState, 0, 2, compteur);
+						temp->nbPieces++;
+						currentState = temp;
 						compteur++;
 
 						system("cls");
@@ -309,29 +320,30 @@ public:
 		}
 	}
 
-	state MinMax(state* root, int depth, int playerTurn, int nbPieces)
+	state* MinMax(state* root, int depth, int playerTurn, int nbPieces)
 	{
 		int bestScore = -100;
-		
+		if (winningStateBot(root, playerTurn % 2 +1) == true)
+		{
+			root->cost = -1000;
+		}
 		state* path = NULL;
 		if (depth == 3)
 		{
 			if (nbPieces < 7)
 			{
-				state* temp = new state();
-				temp->cost = euristiqueDrop(root, playerTurn % 2 + 1);
-				return *temp;
+				root->cost = euristiqueDrop(root, playerTurn % 2 + 1);
+				return root;
 			}
 			else
 			{
-				state* temp = new state();
-				temp->cost = euristiqueMove(root, playerTurn % 2 + 1);
-				return *temp;
+				root->cost = euristiqueMove(root, playerTurn % 2 + 1);
+				return root;
 			}
 		}
 		else
 		{
-			if (nbPieces < 6)
+			if (nbPieces < 7)
 			{
 				playerTurn++;
 				vector <state*> dropList;
@@ -340,11 +352,11 @@ public:
 				int i = dropList.size();
 				for (int n = 0; n < i; n++)
 				{
-					state temp = MinMax(dropList[n], depth + 1, playerTurn, nbPieces + 1);
-					temp.cost = temp.cost*-1;
-					if (bestScore < temp.cost)
+					MinMax(dropList[n], depth + 1, playerTurn, nbPieces + 1);
+					dropList[n]->cost *= -1;
+					if (bestScore < dropList[n]->cost)
 					{
-						bestScore = temp.cost;
+						bestScore = dropList[n]->cost;
 						path = dropList[n];
 					}
 				}
@@ -356,26 +368,27 @@ public:
 				int i = moveList.size();
 				for (int n = 0; n < i; n++)
 				{
-					state temp = MinMax(moveList[n], depth++, playerTurn++ % 2 + 1, nbPieces++);
-					temp.cost = temp.cost*-1;
-					if (bestScore < temp.cost)
+					state *temp = MinMax(moveList[n], depth++, playerTurn++ % 2 + 1, nbPieces++);
+					temp->cost = temp->cost*-1;
+					if (bestScore < temp->cost)
 					{
-						bestScore = temp.cost;
+						bestScore = temp->cost;
 						path = moveList[n];
 					}
 				}
 			}
 		}
-		return *path;
+		return path;
 	}
 
 	int euristiqueMove(state* root, int playerTurn)
 	{
 		if (winningStateBot(root, playerTurn) == true)
 		{
-			return INT_MAX;
+			return 1000;
 		}
-		return 0;
+		else
+			return 0;
 	}
 
 	int euristiqueDrop(state* root, int playerTurn)
@@ -387,14 +400,21 @@ public:
 			player = 'o';
 		int points = 0;
 		//check your colonne
+		bool flag = 0;
 		for (int i = 0; i < 3; i++)
 		{
+			flag = 0;
 			int tempPoints = 0;
 			for (int j = 0; j < 3; j++)
 			{
 				if (root->board[j][i] == player)
 				{
 					tempPoints++;
+					if (tempPoints > 1 && flag !=1)
+					{
+						tempPoints *= 2;
+						flag = 1;
+					}
 				}
 				else
 				{
@@ -404,11 +424,14 @@ public:
 						break;
 					}
 				}
-			}			points += tempPoints;
+			}			
+			points += tempPoints;
 		}
 		//check his colonne
+		
 		for (int i = 0; i < 3; i++)
 		{
+			flag = 0;
 			int tempPoints = 0;
 			for (int j = 0; j < 3; j++)
 			{
@@ -419,21 +442,35 @@ public:
 				}
 				else
 				{
-					if(root->board[j][i] != '.')
+					if (root->board[j][i] != '.')
 						tempPoints++;
+					if (tempPoints > 1 && flag != 1)
+					{
+						tempPoints *= 3;
+						flag = 1;
+					}
+						
 				}
 			}
 			points -= tempPoints;
 		}
 		//check your row
+		
 		for (int i = 0; i < 3; i++)
 		{
+			flag = 0;
 			int tempPoints = 0;
 			for (int j = 0; j < 3; j++)
 			{
 				if (root->board[i][j] == player)
 				{
 					tempPoints++;
+					if (tempPoints > 1 && flag != 1)
+					{
+						tempPoints *= 2;
+
+						flag = 1;
+					}
 				}
 				else
 				{
@@ -447,8 +484,10 @@ public:
 			points += tempPoints;
 		}
 		// check his row
+		
 		for (int i = 0; i < 3; i++)
 		{
+			flag = 0;
 			int tempPoints = 0;
 			for (int j = 0; j < 3; j++)
 			{
@@ -461,17 +500,30 @@ public:
 				{
 					if (root->board[i][j] != '.')
 						tempPoints++;
+					if (tempPoints > 1 && flag != 1)
+					{
+						tempPoints *= 3;
+						flag = 1;
+					}
+						
 				}
 			}
 			points -= tempPoints;
 		}
 		//check your primary diagonal
+		
 		int tempPoints = 0;
 		for (int i = 0; i < 3; i++)
 		{
+			flag = 0;
 			if (root->board[i][i] == player)
 			{
 				tempPoints++;
+				if (tempPoints > 1 && flag != 1)
+				{
+					tempPoints *= 2;
+					flag = 1;
+				}
 			}
 			else
 			{
@@ -487,6 +539,7 @@ public:
 		tempPoints = 0;
 		for (int i = 0; i < 3; i++)
 		{
+			flag = 0;
 			if (root->board[i][i] == player)
 			{
 				tempPoints = 0;
@@ -496,6 +549,10 @@ public:
 			{
 				if (root->board[i][i] != '.')
 					tempPoints++;
+				if (tempPoints > 1 && flag != 1)
+				{
+					tempPoints *= 3;
+				}
 			}
 		}
 		points -= tempPoints;
@@ -503,8 +560,16 @@ public:
 		tempPoints = 0;
 		for (int i = 0; i < 3; i++)
 		{
+			flag = 0;
 			if (root->board[i][(2) - i] == player)
+			{
 				tempPoints++;
+				if (tempPoints > 1 && flag != 1)
+				{
+					tempPoints *= 2;
+					flag = 1;
+				}
+			}
 			else
 			{
 				if (root->board[i][(2) - i] != '.')
@@ -513,7 +578,7 @@ public:
 					break;
 				}
 			}
-				
+
 		}
 		points += tempPoints;
 
@@ -521,6 +586,7 @@ public:
 		tempPoints = 0;
 		for (int i = 0; i < 3; i++)
 		{
+			flag = 0;
 			if (root->board[i][(2) - i] == player)
 			{
 				tempPoints = 0;
@@ -529,9 +595,12 @@ public:
 			else
 			{
 				if (root->board[i][(2) - i] != '.')
-				{
 					tempPoints++;
+				if (tempPoints > 1 && flag != 1)
+				{
+					tempPoints *= 3;
 				}
+					
 			}
 		}
 		points -= tempPoints;
