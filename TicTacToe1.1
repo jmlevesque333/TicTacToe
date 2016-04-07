@@ -323,7 +323,7 @@ public:
 	state* MinMax(state* root, int depth, int playerTurn, int nbPieces)
 	{
 		int bestScore = -100;
-		if (winningStateBot(root, playerTurn % 2 +1) == true)
+		if (winningStateBot(root, playerTurn % 2 + 1) == true)
 		{
 			root->cost = -1000;
 		}
@@ -343,16 +343,17 @@ public:
 		}
 		else
 		{
-			if (nbPieces < 7)
+			if (nbPieces < 6)
 			{
 				playerTurn++;
 				vector <state*> dropList;
-				generateDrop(dropList, root, playerTurn % 2 + 1, nbPieces);
+				generateDrop(dropList, root, playerTurn % 2 + 1, nbPieces+1);
 
 				int i = dropList.size();
 				for (int n = 0; n < i; n++)
 				{
-					MinMax(dropList[n], depth + 1, playerTurn, nbPieces + 1);
+					state* temp = MinMax(dropList[n], depth + 1, playerTurn, nbPieces + 1);
+					dropList[n]->cost = temp->cost;
 					dropList[n]->cost *= -1;
 					if (bestScore < dropList[n]->cost)
 					{
@@ -364,12 +365,13 @@ public:
 			else
 			{
 				vector <state*> moveList;
-				generateMove(moveList, playerTurn, nbPieces);
+				generateMove(moveList, currentState, playerTurn % 2 +1, nbPieces);
 				int i = moveList.size();
 				for (int n = 0; n < i; n++)
 				{
 					state *temp = MinMax(moveList[n], depth++, playerTurn++ % 2 + 1, nbPieces++);
-					temp->cost = temp->cost*-1;
+					moveList[n]->cost = temp->cost;
+					moveList[n]->cost *= -1;
 					if (bestScore < temp->cost)
 					{
 						bestScore = temp->cost;
@@ -410,7 +412,7 @@ public:
 				if (root->board[j][i] == player)
 				{
 					tempPoints++;
-					if (tempPoints > 1 && flag !=1)
+					if (tempPoints > 1 && flag != 1)
 					{
 						tempPoints *= 2;
 						flag = 1;
@@ -424,11 +426,11 @@ public:
 						break;
 					}
 				}
-			}			
+			}
 			points += tempPoints;
 		}
 		//check his colonne
-		
+
 		for (int i = 0; i < 3; i++)
 		{
 			flag = 0;
@@ -449,13 +451,13 @@ public:
 						tempPoints *= 3;
 						flag = 1;
 					}
-						
+
 				}
 			}
 			points -= tempPoints;
 		}
 		//check your row
-		
+
 		for (int i = 0; i < 3; i++)
 		{
 			flag = 0;
@@ -484,7 +486,7 @@ public:
 			points += tempPoints;
 		}
 		// check his row
-		
+
 		for (int i = 0; i < 3; i++)
 		{
 			flag = 0;
@@ -505,13 +507,13 @@ public:
 						tempPoints *= 3;
 						flag = 1;
 					}
-						
+
 				}
 			}
 			points -= tempPoints;
 		}
 		//check your primary diagonal
-		
+
 		int tempPoints = 0;
 		for (int i = 0; i < 3; i++)
 		{
@@ -600,7 +602,7 @@ public:
 				{
 					tempPoints *= 3;
 				}
-					
+
 			}
 		}
 		points -= tempPoints;
@@ -623,7 +625,7 @@ public:
 		}
 	}
 
-	void generateMove(vector<state*> moveList, int playerTurn, int nbPieces)
+	void generateMove(vector<state*> moveList, state* root, int playerTurn, int nbPieces)
 	{
 		for (int i = 0; i < 3; i++)
 		{
@@ -635,7 +637,7 @@ public:
 					{
 						if (validMove(i, j, x, y, playerTurn) == true)
 						{
-							moveList.push_back(new state(currentState, 0, i, j, playerTurn, nbPieces, x, y));
+							moveList.push_back(new state(root, 0, i, j, playerTurn, nbPieces, x, y));
 						}
 					}
 				}
@@ -791,7 +793,7 @@ int main()
 	cout << " ___________________________________________________________________________________________ " << endl;
 	cout << "|                                                                                           |" << endl;
 	cout << "|                                                                                           |" << endl;
-	cout << "|  $$$$$$$$\\ $$\\                $$$$$$$$\\                       $$$$$$$$\\                   |" << endl;
+	cout << "|  $$$$$$$$\\ $$\\               $$$$$$$$\\                       $$$$$$$$\\                    |" << endl;
 	cout << "|  \\__$$  __|\\__|              \\__$$  __|                      \\__$$  __|                   |" << endl;
 	cout << "|     $$ |   $$\\  $$$$$$$\\         $$ | $$$$$$\\   $$$$$$$\\         $$ | $$$$$$\\   $$$$$$\\   |" << endl;
 	cout << "|     $$ |   $$ |$$  _____|$$$$$$\\ $$ | \\____$$\\ $$  _____|$$$$$$\\ $$ |$$  __$$\\ $$  __$$\\  |" << endl;
