@@ -218,14 +218,14 @@ public:
 					}
 					system("cls");
 					currentState->printState();
-					if (compteur < 6 && flag != true)
+					if (compteur < 6)
 					{
 						state *temp = MinMax(currentState, 0, 2, compteur);
 						temp->nbPieces++;
 						currentState = temp;
 						compteur++;
 					}
-					if (compteur > 5 && flag != true)
+					if (compteur > 5 )
 					{
 						system("cls");
 						currentState->printState();
@@ -244,7 +244,7 @@ public:
 						}
 						currentState->board[pieceY][pieceX] = '.';
 						currentState->board[moveY][moveX] = 'x';
-						if (winningStateHuman(currentState, (playerturn % 2 + 1), moveX, moveY) == true)
+						if (winningStateHuman(currentState, (1), moveX, moveY) == true)
 						{
 							system("cls");
 							currentState->printState();
@@ -253,7 +253,7 @@ public:
 						}
 							
 						compteur++;
-						if (compteur > 5 && flag != true)
+						if (compteur > 5)
 						{
 							system("cls");
 							currentState->printState();
@@ -262,7 +262,7 @@ public:
 							temp->nbPieces++;
 							currentState = temp;
 							compteur++;
-							if (winningStateBot(currentState, playerturn % 2 + 1))
+							if (winningStateBot(currentState, 2))
 							{
 								system("cls");
 								currentState->printState();
@@ -273,7 +273,7 @@ public:
 					}
 				}
 			}
-		// fix this	else if (playernb == 2)
+		else if (playernb == 2)
 			{
 				while (flag != true)
 				{
@@ -281,43 +281,68 @@ public:
 					currentState->printState();
 					if (compteur < 6)
 					{
-						state *temp = MinMax(currentState, 0, 2, compteur);
+						state *temp = MinMax(currentState, 0, 1, compteur);
 						temp->nbPieces++;
 						currentState = temp;
 						compteur++;
 					}
+					
+					if (winningStateBot(currentState, 1))
+					{
+						system("cls");
+						currentState->printState();
+						cout << "Player 1 won!" << endl;
+						return;
+					}
+					system("cls");
+					currentState->printState();
 					if (compteur < 6)
 					{
 						cout << "input the cardinal position you want to put a piece on. ex: 0 2" << endl;
-						cout << "player " << '2' << "'s turn" << endl;
+						cout << "player 2's turn" << endl;
 
 						while (validDrop(moveX, moveY, currentState) != true)
 						{
 							cin >> moveX;
 							cin >> moveY;
 						}
-						currentState->board[moveY][moveX] = 'x';
-						if (winningStateHuman(currentState, 1, moveX, moveY))
-							flag = true;
+						currentState->board[moveY][moveX] = 'o';
+						
+						if (winningStateHuman(currentState, 2, moveX, moveY))
+						{
+							system("cls");
+							currentState->printState();
+							cout << "Player 2 won!" << endl;
+							return;
+						}
+						system("cls");
+						currentState->printState();
 						compteur++;
 					}
 					if (compteur > 5)
 					{
-						state *temp = MinMax(currentState, 0, 2, compteur);
+						state *temp = MinMax(currentState, 0, 1, compteur);
 						temp->nbPieces++;
 						currentState = temp;
 						compteur++;
+						if (winningStateBot(currentState, 1))
+						{
+							system("cls");
+							currentState->printState();
+							cout << "Player 1 won!" << endl;
+							return;
+						}
 
 						system("cls");
 						currentState->printState();
 
 						cout << "input in x and y the piece you want to move, and the position you want to move it to. ex 0 0 1 0" << endl;
-						cout << "player " << playerturn % 2 + 1 << "'s turn" << endl;
+						cout << "player 2's turn" << endl;
 						cin >> pieceX;
 						cin >> pieceY;
 						cin >> moveX;
 						cin >> moveY;
-						while (validMove(currentState, pieceX, pieceY, moveX, moveY, playerturn % 2 + 1) != true)
+						while (validMove(currentState, pieceX, pieceY, moveX, moveY, 2) != true)
 						{
 							cin >> pieceX;
 							cin >> pieceY;
@@ -325,13 +350,20 @@ public:
 							cin >> moveY;
 						}
 						currentState->board[pieceX][pieceX] = '.';
-						currentState->board[moveY][moveX] = 'x';
-						if (winningStateHuman(currentState, (playerturn % 2 + 1), moveX, moveY) == true)
-							flag = true;
+						currentState->board[moveY][moveX] = 'o';
+						if (winningStateHuman(currentState, (2), moveX, moveY) == true)
+						{
+							system("cls");
+							currentState->printState();
+							cout << "Player 2 won!" << endl;
+							return;
+						}
+						system("cls");
+						currentState->printState();
 						compteur++;
 					}
 				}
-			} ////// fix this///fix this
+			} 
 		}
 	}
 
