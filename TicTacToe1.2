@@ -840,16 +840,14 @@ int main()
 	cout << "|                                          2-Player                                         |" << endl;
 	cout << "|                                                                                           |" << endl;
 	cout << "|                                                                                           |" << endl;
-	cout << "|                            W-Up, S-Down, A-Left, D-Right, Enter                           |" << endl;
 	cout << " ------------------------------------------------------------------------------------------- " << endl;
 
 	system("pause");
 
-	bool playerFlag = true;
-	char input = 0;
-	game(1);
-
-
+	int playerNb = 0;
+	cout << "1 Player or 2 Player?" << endl;
+	cin >> playerNb;
+	game a(playerNb);
 
 	return 0;
 }
